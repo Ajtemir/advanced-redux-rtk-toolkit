@@ -1,5 +1,7 @@
 import {IUser} from "../models/IUser";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {fetchUsers} from "./ActionCreators";
+import {TypedActionCreator} from "@reduxjs/toolkit/dist/mapBuilders";
 
 export interface UserState {
     users: IUser[];
@@ -17,19 +19,24 @@ export const userSlice = createSlice(
     {
         name: 'user',
         initialState,
-        reducers: {
-            usersFetching(state){
+        reducers: {},
+        extraReducers: (builder) => {
+            builder.addCase(fetchUsers.pending, (state) => {
                 state.isLoading = true;
-            },
-            usersFetchingSuccess(state, action:PayloadAction<IUser[]>){
+            });
+            builder.addCase(fetchUsers.fulfilled, (state,action) => {
                 state.isLoading = false;
                 state.error = ''
                 state.users = action.payload
-            },
-            usersFetchingError(state, action:PayloadAction<string>){
+            });
+            builder.addCase(fetchUsers.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.payload
-            }
+                if (typeof action.payload === 'string') {
+                    state.error = action.payload;
+                } else {
+                    state.error = "Неизвестная ошибка";
+                }
+            });
         }
     }
 )
